@@ -125,4 +125,4 @@ type Chat = {
     </>
   )
 }
-export default Home
+export default Home;

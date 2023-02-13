@@ -46,5 +46,4 @@ const ChatBox = ({ message, user }: { message: string; user: "me" | "gpt" }) => 
       </motion.div> 
   );
 };
-
 export default ChatBox;

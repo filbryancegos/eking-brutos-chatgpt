@@ -1,11 +1,73 @@
 import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
 import styles from '@/styles/Home.module.css'
+import { useState } from "react";
+import type { NextPage } from "next";
+import { AnimatePresence } from "framer-motion";
+import ThreeDotsLoader from "../icons/ThreeDotsLoader";
+import FormField from '../components/FormField';
+import ChatBox from '../components/ChatBox';
+import { useToast } from '@chakra-ui/react'
 
-const inter = Inter({ subsets: ['latin'] })
+type Chat = {
+  user: "me" | "gpt";
+  message: string;
+  originalIndex: number;
+};
 
-export default function Home() {
+ const Home: NextPage = () => {
+  const [value, setValue] = useState("");
+  const [isSubmit, setIsSubmit] = useState(false);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const toast = useToast()
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+
+    if(!value) {
+      return;
+    }
+    
+    try {
+      setIsSubmit(true);
+      setValue("");
+      setChats((prev) => [
+        { user: "me", message: value, originalIndex: prev.length },
+        ...prev,
+      ]);
+   
+      const res = await fetch("/api/ekingbrutos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: [{ user: "me", message: value }, ...chats]
+            .reverse()
+            .map((d) => d.message)
+            .join(""),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.status !== 200) {
+        throw (
+          data.error ||
+          new Error(`Request failed with status ${res.status}`)
+        );
+      }
+
+      setChats((prev) => [
+        { user: "gpt", message: data.result, originalIndex: prev.length },
+        ...prev,
+      ]);
+      console.log(chats);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsSubmit(false);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -15,109 +77,52 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>src/pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
+        <div className=' w-100 md:w-3/6'>
+          <h1 className='text-white text-3xl font-bold text-uppercase uppercase text-center pb-4'>
+            welcome to egos <span className='text-pink-400'>chatgpt</span>
+          </h1>
+          <div className='bg-gray-900 w-100 pb-2'
+            style={{
+              padding: '1rem 1rem',
+              borderRadius: '0 20px 20px 20px',
+              minHeight: '71vh',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-end',
+            }}
+          >
+          <div className='flex items-start flex-col-reverse overflow-y-auto gap-2 mb-4'>
+            { isSubmit && 
+              <div>
+                <ThreeDotsLoader/>
+              </div>
+            }
+            <AnimatePresence>
+            {chats.map((chat, index) => {
+              return (
+                <ChatBox
+                  key={chat.originalIndex}
+                  message={chat.message}
+                  user={chat.user}
               />
-            </a>
+              );
+            })}
+            
+            </AnimatePresence>
+          
           </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
+            <FormField 
+              onSubmit={handleSubmit!}
+              inputProps={{
+                onChange: (e) => setValue(e.target.value),
+                autoFocus: true,
+                value,
+              }}
+             />
           </div>
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
         </div>
       </main>
     </>
   )
 }
+export default Home

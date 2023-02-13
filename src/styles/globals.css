@@ -6,8 +6,8 @@
     'Fira Mono', 'Droid Sans Mono', 'Courier New', monospace;
 
   --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --background-start-rgb: 91, 71, 187, 1;
+  --background-end-rgb: 161, 43, 160, 1;
 
   --primary-glow: conic-gradient(
     from 180deg at 50% 50%,
@@ -105,3 +105,21 @@ a {
     color-scheme: dark;
   }
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700;800&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.bg-purple-600 {
+  background-color: rgb(65, 132, 239)
+}
+
+.bg-pink-600 {
+  background-color: rgb(234, 84, 184)
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
